@@ -30,6 +30,26 @@ async function run() {
       console.log(result);
     });
 
+    app.get("/users", async (req, res) => {
+      const email = req.query;
+      console.log(email);
+      const query = { email };
+      const user = await usersCollections.findOne(query);
+      res.send(user);
+      console.log(user);
+    });
+
+    app.get("/homePosts", async (req, res) => {
+      const query = {};
+      const posts = await postsCollections
+        .find(query)
+        .limit(3)
+        .sort({ react: 1 })
+        .toArray();
+      res.send(posts);
+      console.log(posts);
+    });
+
     app.post("/posts", async (req, res) => {
       const post = req.body;
       const result = await postsCollections.insertOne(post);
@@ -37,15 +57,25 @@ async function run() {
       console.log(result);
     });
 
+    app.get("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const post = await postsCollections.findOne(query);
+      res.send(post);
+      console.log(post);
+    });
+
     app.put("/posts/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
-      const numberOfReact = req.body.count;
+      const numberOfReact = req.body.reactCount;
       console.log(numberOfReact);
       const options = { upsert: true };
       const updatedDoc = {
         $set: {
           react: numberOfReact,
+          text: req.body.text,
+          image: req.body.image,
         },
       };
       const result = await postsCollections.updateOne(
