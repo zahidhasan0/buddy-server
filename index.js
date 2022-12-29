@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 
@@ -35,6 +35,32 @@ async function run() {
       const result = await postsCollections.insertOne(post);
       res.send(result);
       console.log(result);
+    });
+
+    app.put("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const numberOfReact = req.body.count;
+      console.log(numberOfReact);
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          react: numberOfReact,
+        },
+      };
+      const result = await postsCollections.updateOne(
+        query,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+      console.log(result);
+    });
+
+    app.get("/posts", async (req, res) => {
+      const query = {};
+      const posts = await postsCollections.find(query).toArray();
+      res.send(posts);
     });
 
     app.get("/", (req, res) => {
