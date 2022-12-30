@@ -125,26 +125,29 @@ async function run() {
       // console.log(result);
     });
 
-    app.patch("/posts/:id", async (req, res) => {
-      const id = req.params.id;
+    app.put("/users", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const body = req.body;
 
-      const query = { _id: ObjectId(id) };
-      const numberOfReact = req.body.reactCount;
+      console.log("this is the console ------------", body, query);
 
       const options = { upsert: true };
       const updatedDoc = {
         $set: {
-          react: numberOfReact,
-          // text: req.body.text,
-          // image: req.body.image,
+          name: body.name,
+          profilePic: body.profilePic,
+          university: body.university,
+          address: body.address,
         },
       };
-      const result = await postsCollections.updateOne(
+      const result = await usersCollections.updateOne(
         query,
         updatedDoc,
         options
       );
       res.send(result);
+      console.log(result);
     });
 
     app.get("/posts", async (req, res) => {
