@@ -56,12 +56,6 @@ async function run() {
 
       const posts = await postsCollections.find(query).toArray();
 
-      // const posts = await postsCollections
-      //   .find(query)
-      //   .limit(3)
-      //   .sort({ react: 1 })
-      //   .toArray();
-
       posts.sort((a, b) =>
         a.reactUsers.length < b.reactUsers.length ? 1 : -1
       );
@@ -120,9 +114,6 @@ async function run() {
 
         res.send({ result: "removed" });
       }
-
-      // res.send(result);
-      // console.log(result);
     });
 
     app.put("/users", async (req, res) => {
