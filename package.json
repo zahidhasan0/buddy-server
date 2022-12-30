@@ -7,13 +7,21 @@
     "starts": "index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zahidhasan0/buddy-server.git"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zahidhasan0/buddy-server/issues"
+  },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "mongodb": "^4.13.0"
-  }
+  },
+  "homepage": "https://github.com/zahidhasan0/buddy-server#readme"
 }
