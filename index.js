@@ -25,36 +25,53 @@ async function run() {
 
     app.post("/users", async (req, res) => {
       const user = req.body;
-      const result = await usersCollections.insertOne(user);
-      res.send(result);
-      console.log(result);
+      const users = await usersCollections.find({}).toArray();
+      let isUser = false;
+
+      users.forEach((currentUser) => {
+        if (currentUser.email === user?.email) {
+          isUser = true;
+        }
+      });
+
+      if (!isUser) {
+        const result = await usersCollections.insertOne(user);
+        res.send(result);
+      } else {
+        console.log("user exist");
+        res.send({ result: "user exist" });
+      }
     });
 
     app.get("/users", async (req, res) => {
-      const email = req.query;
-      console.log(email);
-      const query = email;
+      const email = req.query.email;
+      const query = { email: email };
       const user = await usersCollections.findOne(query);
-      res.send(user);
       console.log(user);
+      res.send(user);
     });
 
     app.get("/homePosts", async (req, res) => {
       const query = {};
-      const posts = await postsCollections
-        .find(query)
-        .limit(3)
-        .sort({ react: 1 })
-        .toArray();
+
+      const posts = await postsCollections.find(query).toArray();
+
+      // const posts = await postsCollections
+      //   .find(query)
+      //   .limit(3)
+      //   .sort({ react: 1 })
+      //   .toArray();
+
+      posts.sort((a, b) =>
+        a.reactUsers.length < b.reactUsers.length ? 1 : -1
+      );
       res.send(posts);
-      console.log(posts);
     });
 
     app.post("/posts", async (req, res) => {
       const post = req.body;
       const result = await postsCollections.insertOne(post);
       res.send(result);
-      console.log(result);
     });
 
     app.get("/posts/:id", async (req, res) => {
@@ -62,20 +79,64 @@ async function run() {
       const query = { _id: ObjectId(id) };
       const post = await postsCollections.findOne(query);
       res.send(post);
-      console.log(post);
     });
 
-    app.put("/posts/:id", async (req, res) => {
+    app.put("/react/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
+      const userEmail = req.body.userId;
+      const options = { upsert: true };
+
+      const post = await postsCollections.findOne(query);
+
+      const usersThatReacted = post.reactUsers;
+
+      if (!usersThatReacted?.includes(userEmail)) {
+        const updatedDoc = {
+          $set: {
+            reactUsers: [...usersThatReacted, userEmail],
+          },
+        };
+        const result = await postsCollections.updateOne(
+          query,
+          updatedDoc,
+          options
+        );
+
+        res.send({ result: "added" });
+      } else {
+        removedUserArr = usersThatReacted.filter((e) => e !== userEmail);
+
+        const updatedDoc = {
+          $set: {
+            reactUsers: [...removedUserArr],
+          },
+        };
+        const result = await postsCollections.updateOne(
+          query,
+          updatedDoc,
+          options
+        );
+
+        res.send({ result: "removed" });
+      }
+
+      // res.send(result);
+      // console.log(result);
+    });
+
+    app.patch("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+
+      const query = { _id: ObjectId(id) };
       const numberOfReact = req.body.reactCount;
-      console.log(numberOfReact);
+
       const options = { upsert: true };
       const updatedDoc = {
         $set: {
           react: numberOfReact,
-          text: req.body.text,
-          image: req.body.image,
+          // text: req.body.text,
+          // image: req.body.image,
         },
       };
       const result = await postsCollections.updateOne(
@@ -84,13 +145,19 @@ async function run() {
         options
       );
       res.send(result);
-      console.log(result);
     });
 
     app.get("/posts", async (req, res) => {
       const query = {};
       const posts = await postsCollections.find(query).toArray();
       res.send(posts);
+    });
+
+    app.delete("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await postsCollections.deleteOne(query);
+      res.send(result);
     });
 
     app.get("/", (req, res) => {
