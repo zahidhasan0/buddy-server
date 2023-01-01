@@ -121,8 +121,6 @@ async function run() {
       const query = { email: email };
       const body = req.body;
 
-      console.log("this is the console ------------", body, query);
-
       const options = { upsert: true };
       const updatedDoc = {
         $set: {
@@ -153,15 +151,14 @@ async function run() {
       const result = await postsCollections.deleteOne(query);
       res.send(result);
     });
-
-    app.get("/", (req, res) => {
-      res.send("This is the server of buddy");
-    });
   } finally {
   }
 }
 run().catch((error) => console.error(error));
 
+app.get("/", (req, res) => {
+  res.send("This is the server of buddy");
+});
 app.listen(port, () => {
   console.log(`server is running on port ${port}`);
 });
